@@ -1,4 +1,4 @@
-# Final Project of Team ABCD for EECS 731(Introduction to Data Science) at the University of Kansas, USA
+# Final Project of Team ABCD for EECS 731(Introduction to Data Science) at the University of Kansas
 This repository contains the restaurant recommendation project that has been created on the dataset collected from Zomato.
 
 # What is covered in this project?
