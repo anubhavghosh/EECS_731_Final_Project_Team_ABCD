@@ -1,0 +1,103 @@
+---
+title: "R Notebook"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+```{r setup, include=FALSE}
+# load packages
+library(knitr)
+library(formatR)
+library(stargazer)
+library(xtable)
+library(ggplot2)    
+library(dplyr)    
+library(readr)    
+library(choroplethr)
+library(tinytex)
+library(lmtest)
+library(car)
+library(olsrr)
+library(psych)
+library(faraway)
+library(leaps)
+library(data.table)
+require(epiDisplay)
+library(gridExtra)
+knitr::opts_chunk$set(echo = TRUE)
+options(digits = 5, width = 60, xtable.comment = FALSE)
+opts_chunk$set(tidy.opts = list(width.cutoff=60), tidy=TRUE)
+out_type <- knitr::opts_knit$get("rmarkdown.pandoc.to")
+```
+```{r, include=FALSE}
+library(ggplot2)
+#library(clusterSim)
+library(factoextra)
+library(tidyverse)  # data manipulation
+library(cluster)
+
+```
+
+```{r}
+zomato <- read.csv("~/Downloads/export_dataframe.csv")
+zomato_nocuisines<- zomato[-c(7)]
+zomato_nocuisines$scaledvote <- scale(zomato_nocuisines$votes)
+zomato_nocuisines$scaledcost <- scale(zomato_nocuisines$cost_for_two)
+zomato_nocuisines<- zomato_nocuisines[-c(1)]
+zomato_nocuisines<- zomato_nocuisines[-c(2:3)]
+ggplot(zomato_nocuisines, aes(rate))+ geom_dotplot(binwidth = 0.001)
+k2 <- kmeans(zomato_nocuisines, centers = 2, nstart = 25)
+str(k2)
+fviz_cluster(k2, data = zomato_nocuisines)
+k3 <- kmeans(zomato_nocuisines, centers = 3, nstart = 25)
+str(k3)
+fviz_cluster(k3, data = zomato_nocuisines)
+k4 <- kmeans(zomato_nocuisines, centers = 4, nstart = 25)
+str(k4)
+fviz_cluster(k4, data = zomato_nocuisines)
+k5 <- kmeans(zomato_nocuisines, centers = 5, nstart = 25)
+str(k5)
+fviz_cluster(k5, data = zomato_nocuisines)
+ 
+ # plots to compare
+p1 <- fviz_cluster(k2, geom = "point", data = zomato_nocuisines) + ggtitle("k = 2")
+p2 <- fviz_cluster(k3, geom = "point",  data = zomato_nocuisines) + ggtitle("k = 3")
+p3 <- fviz_cluster(k4, geom = "point",  data = zomato_nocuisines) + ggtitle("k = 4")
+p4 <- fviz_cluster(k5, geom = "point",  data = zomato_nocuisines) + ggtitle("k = 5")
+library(gridExtra)
+```
+
+
+```{r}
+p1<- ggplot(zomato_nocuisines, aes(y= rate, x=scaledcost))+ geom_point(aes(color = factor(online_order))) +labs(x= "Cost", y="Rate", title = "Rate vs Cost")+ geom_smooth(method = "lm")
+p2<- ggplot(zomato_nocuisines, aes(y = rate, x = scaledcost)) + geom_point(aes(color = factor(book_table)))+labs(x= "Cost", y="Rate", title = "Rate vs Cost")+ geom_smooth(method = "lm")
+p3<- ggplot(zomato_nocuisines, aes(y= rate, x=scaledvote))+ geom_point(aes(color = factor(online_order))) +labs(x= "Cost", y="Rate", title = "Rate vs Vote")+ geom_smooth(method = "lm")
+p4<- ggplot(zomato_nocuisines, aes(y = rate, x = scaledvote)) + geom_point(aes(color = factor(book_table)))+labs(x= "Cost", y="Rate", title = "Rate vs Vote")+ geom_smooth(method = "lm")
+grid.arrange(p1, p2, nrow = 1)
+grid.arrange(p3, p4, nrow=1)
+```
+
+```{r, echo=TRUE, include=FALSE, message=FALSE}
+
+zomatolr2<- lm(rate~scaledcost, zomato_nocuisines)
+zomatolr1<- lm(rate~scaledvote+scaledcost, zomato_nocuisines)
+zomatolr<- lm(rate~online_order+book_table+scaledvote+scaledcost, zomato_nocuisines)
+
+```
+
+\newpage
+
+```{r tab7,  echo=FALSE, results="asis", message=FALSE}
+xtable(summary(zomatolr2)$coef, caption = "Table of model involving  rate, and cost.")
+xtable(summary(zomatolr1)$coef, caption = "Table of model involving  rate, cost, and vote.")
+xtable(summary(zomatolr)$coef, caption = "Table of model involving  rate, online order, votes, cost, and book table.")
+mod0 <- regsubsets(rate ~ ., data = zomato_nocuisines)
+cp_min <- which.min(summary(mod0)$cp)
+par(mfrow = c(1, 2))
+plot(1:4, summary(mod0)$cp, type = "b", ylab = expression(C[p]),
+ylim = c(2, 17), lwd = 3, main = "Cp variable Selection",
+xlab = "Number of Parameters")
+points(cp_min, summary(mod0)$cp[cp_min], col = "red", cex = 2,
+pch = 20)
+plot(mod0, scale = "Cp")
+```
