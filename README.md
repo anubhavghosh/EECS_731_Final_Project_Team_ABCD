@@ -8,6 +8,9 @@ The work covers four distinctive elements of data analytics and data science. Th
 3. Content-Based Recommendation (B2C Application) system for the users which can recommend a restaurant which offers a set of restaurants which you have just visited
 4. Clustering (B2B) application which clusters restaurants which are very similar to each other so that a business can analyse who are its competitors. This can play a pivotal role in decision making for mergers and acquisitions. 
 
+# Source of Data
+https://www.kaggle.com/himanshupoddar/zomato-bangalore-restaurants
+
 # Reports
 Most of the reports are in the 'Reports' directory
 
